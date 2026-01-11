@@ -1,0 +1,35 @@
+# Core Dependencies
+langgraph>=0.0.40
+langchain-core>=0.1.0
+langchain-openai>=0.0.5
+
+# Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+streamlit>=1.30.0
+
+# Data Validation
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Configuration
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+
+# HTTP Client
+httpx>=0.26.0
+requests>=2.31.0
+
+# Optional: Redis for session persistence
+# redis>=5.0.0
+
+# Optional: Production server
+# gunicorn>=21.2.0
+
+# Development Dependencies (optional)
+# pytest>=7.4.0
+# pytest-asyncio>=0.21.0
+# black>=23.12.0
+# flake8>=7.0.0
+# mypy>=1.8.0
+

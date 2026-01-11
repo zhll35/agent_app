@@ -1,0 +1,19 @@
+[project]
+name = "agent_app"
+version = "0.1.0"
+description = "智能售后客服 Agent 系统"
+requires-python = ">=3.10"
+dependencies = [
+    "langchain>=0.2.0",
+    "langgraph>=0.1.0",
+    "langchain-openai",
+    "pydantic>=2.0",
+    "pydantic-settings",
+    "fastapi",
+    "uvicorn",
+    "pyyaml",
+    "python-dotenv"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,82 @@
+# 售后七步排查法流程配置
+steps:
+  - id: step_1_voltage
+    title: "确认全车电压"
+    action: "text_input"
+    prompt: "请确认全车电压是多少。"
+    check_logic:
+      type: "range_check"
+      # 72V电池，显示应在70V-84V
+      target_field: "voltage_display"
+      min_ratio: 0.97  # 70/72 ≈ 0.97
+      max_ratio: 1.17  # 84/72 ≈ 1.166
+    on_fail:
+      message: "检测到电压异常（显示为{value}V）。请检查：1.蓝牙连接 2.电池插头 3.空开是否跳闸。"
+      next: "end_with_fix"
+    on_success:
+      next: "step_2_match"
+
+  - id: step_2_match
+    title: "核对控制器匹配性"
+    action: "internal_lookup"
+    prompt: "正在为您核对控制器与车型的匹配性，请稍候..."
+    # MCP 工具调用配置
+    mcp_tool:
+      name: "query_controller_compatibility"
+      description: "查询控制器与车型的兼容性"
+      parameters:
+        # 参数从 state.customer_info 中获取
+        vehicle_model: "customer_info.vehicle_model"
+        controller_model: "customer_info.controller_model"
+        controller_brand: "customer_info.controller_brand"
+    # 内部适配表核对
+    check_logic:
+      type: "database_match"
+      db_table: "controller_compatibility"
+    on_fail:
+      # 发错货话术
+      message: "经核对，您手里的控制器版本与车型暂不匹配（批次差异）。辛苦您寄回，我们为您更换适配版本。"
+      next: "return_process"
+    on_success:
+      next: "step_3_wiring"
+
+  - id: step_3_wiring
+    title: "检查转接线"
+    action: "ask_action"
+    prompt: "请确认转接线插头是否已牢固插紧。"
+    # 转接线检查
+    expected_answer: ["是", "插紧", "插好"]
+    on_success:
+      next: "step_4_learning"
+
+  - id: step_4_learning
+    title: "电机自学习确认"
+    action: "ask_confirm"
+    prompt: "安装好后，您是否在小程序里点击过‘电机自学习’？"
+    # 自学习确认
+    expected_answer: ["是", "做过", "完成了"]
+    on_fail:
+      # 转入自学习专项
+      next: "sub_flow_learning_fix"
+    on_success:
+      next: "step_5_protocol"
+
+  - id: step_5_protocol
+    title: "协议与功能检查"
+    action: "conditional_branch"
+    prompt: "请确认控制器的协议设置是否正确。"
+    # 根据品牌分流
+    branches:
+      - condition: "controller_brand == 'Lingbo'"
+        check: "三速功能是否开启"
+      - condition: "controller_brand in ['Leiting', 'Meidisi']"
+        check: "整车协议(CAN/485)选择是否正确"
+    on_success:
+      message: "基础排查已完成。如果还有问题，我们需要进一步精调参数。"
+      next: "end_success"
+
+sub_flows:
+  learning_fix:
+    # 自学习失败专项排查
+    steps:
+      - prompt: "请尝试修改参数：目标转速改为700，加速度改为120，再试一次自学习。"
